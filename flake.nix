@@ -7,12 +7,13 @@
   };
 
   outputs = inputs@{ self, nixpkgs, flake-parts }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      flake = {
-        packages.aarch64-darwin.hello =
-          nixpkgs.legacyPackages.aarch64-darwin.hello;
-        packages.aarch64-darwin.default = self.packages.aarch64-darwin.hello;
-      };
+    flake-parts.lib.mkFlake { inherit inputs; }
+    ({ withSystem, flake-parts-lib, ... }: {
+      imports = let
+        inherit (flake-parts-lib) importApply;
+        day1 = importApply ./day1 { inherit withSystem importApply; };
+      in [ day1 ];
       systems = [ "x86_64-linux" "aarch64-darwin" ];
-    };
+      perSystem = { pkgs, self', ... }: { };
+    });
 }
